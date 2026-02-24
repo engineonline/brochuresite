@@ -13,7 +13,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const grid = document.querySelector("[data-search-grid]");
   const template = document.querySelector("[data-search-card]");
   const loadBtn = document.querySelector("[data-search-load]");
+  const loadWrap = loadBtn ? loadBtn.parentElement : null;
   const emptyEl = document.querySelector("[data-search-empty]");
+  const waitEl = document.querySelector("[data-search-wait]");
 
   if (!grid || !template) return;
 
@@ -32,30 +34,31 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function filterPosts(posts) {
-    const cutoff = Date.now() - MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+    const updateCutoff = Date.now() - MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+    const globalCutoff = new Date("2022-01-01T00:00:00Z").getTime();
     return posts.filter((post) => {
-      if (UPDATE_CATEGORIES.includes(post.cat)) {
-        return new Date(post.timestamp).getTime() >= cutoff;
-      }
+      const ts = new Date(post.timestamp).getTime();
+      if (ts < globalCutoff) return false;
+      if (UPDATE_CATEGORIES.includes(post.cat)) return ts >= updateCutoff;
       return true;
     });
   }
 
   function sortPosts(posts) {
-    return posts.slice().sort(
-      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    );
+    return posts
+      .slice()
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }
 
   function buildCard(post) {
     const card = template.cloneNode(true);
 
-    const urlEl = card.querySelector("[data-search-url]");
+    card.setAttribute("href", "/news/" + post.slug);
+
     const imgEl = card.querySelector("[data-search-image]");
     const titleEl = card.querySelector("[data-search-title]");
     const catEl = card.querySelector("[data-search-cat]");
 
-    if (urlEl) urlEl.setAttribute("href", "/news/" + post.slug);
     if (imgEl) {
       const src =
         post.featuredImageBig && post.featuredImageBig.trim()
@@ -78,17 +81,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateLoadBtn() {
-    if (!loadBtn) return;
-    if (renderedCount >= filteredPosts.length) {
-      loadBtn.style.display = "none";
-    } else {
-      loadBtn.style.display = "";
-    }
+    if (!loadWrap) return;
+    loadWrap.style.display =
+      renderedCount >= filteredPosts.length ? "none" : "flex";
   }
 
   function showEmpty() {
-    if (emptyEl) emptyEl.style.display = "";
-    if (loadBtn) loadBtn.style.display = "none";
+    if (waitEl) waitEl.style.display = "none";
+    if (emptyEl) emptyEl.style.display = "block";
   }
 
   // --- Fetch & initialise ---
@@ -121,6 +121,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Render first page
+      if (waitEl) waitEl.style.display = "none";
+      grid.style.display = "grid";
       renderedCount += renderBatch(filteredPosts, 0, PAGE_SIZE);
       updateLoadBtn();
 
@@ -139,4 +141,29 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   init();
+});
+
+// Search Form
+// Listens for submit on [data-search-form] and redirects to /news-search?query={{input}}
+// Works independently — safe to include on any page with the form present.
+
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("[data-search-form]");
+  const input = document.querySelector("[data-search-input]");
+  const submit = document.querySelector("[data-search-submit]");
+
+  if (!form || !input) return;
+
+  function handleSearch(e) {
+    e.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+    window.location.href = "/search-results?query=" + encodeURIComponent(query);
+  }
+
+  form.addEventListener("submit", handleSearch);
+
+  if (submit) {
+    submit.addEventListener("click", handleSearch);
+  }
 });
