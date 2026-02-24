@@ -1,0 +1,37 @@
+[
+  {
+    "catId": 0,
+    "catName": "All",
+    "color": null
+  },
+  {
+    "catId": 1,
+    "catName": "General News",
+    "color": "#F2730F"
+  },
+  {
+    "catId": 2,
+    "catName": "Availability",
+    "color": "#E80505"
+  },
+  {
+    "catId": 3,
+    "catName": "Bunkering Info",
+    "color": "#74BEED"
+  },
+  {
+    "catId": 4,
+    "catName": "Fuel Quality",
+    "color": "#3226EE"
+  },
+  {
+    "catId": 5,
+    "catName": "Regulations",
+    "color": "#941AEE"
+  },
+  {
+    "catId": 6,
+    "catName": "Alternative Fuels",
+    "color": "#27C043"
+  }
+]
