@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (queryMatch && queryMatch[1]) {
     const decodedQuery = decodeURIComponent(queryMatch[1].replace(/\+/g, " "));
     newsQueryElement.textContent = decodedQuery;
-    newsQueryElement.style.display = "block";
+    newsQueryElement.style.display = "inline";
   } else {
   }
 });
